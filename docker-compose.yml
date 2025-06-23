@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   postgres-common:
     image: postgres:14-alpine
@@ -103,7 +101,7 @@ services:
         condition: service_healthy
 
   connector-c1:
-    image: ghcr.io/inesdata/inesdata-connector:0.9.1
+    image: ghcr.io/inesdata/inesdata-connector:0.10.2
     ports:
       - '19191:19191'
       - '19192:19192'
@@ -115,9 +113,13 @@ services:
     volumes:
       - ./resources:/opt/connector/resources
     environment:
-      - EDC_KEYSTORE=/opt/connector/resources/certs/store.pfx
-      - EDC_KEYSTORE_PASSWORD=inesdata
       - EDC_FS_CONFIG=/opt/connector/resources/configuration/connector-c1-configuration.properties
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "-X", "GET", "http://localhost:19191/api/check/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 5s 
     depends_on:
       keycloak:
         condition: service_healthy
@@ -131,7 +133,7 @@ services:
         condition: service_healthy
 
   connector-c2:
-    image: ghcr.io/inesdata/inesdata-connector:0.9.1
+    image: ghcr.io/inesdata/inesdata-connector:0.10.2
     ports:
       - '29191:29191'
       - '29192:29192'
@@ -143,9 +145,13 @@ services:
     volumes:
       - ./resources:/opt/connector/resources
     environment:
-      - EDC_KEYSTORE=/opt/connector/resources/certs/store.pfx
-      - EDC_KEYSTORE_PASSWORD=inesdata
       - EDC_FS_CONFIG=/opt/connector/resources/configuration/connector-c2-configuration.properties
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "-X", "GET", "http://localhost:29191/api/check/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 5s 
     depends_on:
       postgres-common:
         condition: service_healthy
